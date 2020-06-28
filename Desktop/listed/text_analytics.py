@@ -8,10 +8,9 @@ def TextAnalytics(url, key, text_chunks):
     #perform analytics on the input text
     client = TextAnalyticsClient(url, AzureKeyCredential(key))
 
-    text_message = "YOUR TEXT: "
-    keyphrase_message = ["Keyphrases: "]
-    entity_message = ["Entities: "]
-    sentiment_message = ""
+    keyphrase_message = []
+    entity_message = []
+    sentiment_message = []
 
     positive_score = 0
     neutral_score  = 0
@@ -20,7 +19,6 @@ def TextAnalytics(url, key, text_chunks):
     for text in text_chunks:
         text = [text]
         #grab the sentiment response
-        text_message += text[0]
         sentiment_response = client.analyze_sentiment(documents = text)[0]
 
         positive_score    += sentiment_response.confidence_scores.positive
@@ -36,10 +34,6 @@ def TextAnalytics(url, key, text_chunks):
         for entity in entities_response.entities:
             entity_message.append("* {0} [{1}]\n".format(entity.text, entity.category))
 
-    sentiment_message += "Overall scores: positive={0:.2f}; neutral={1:.2f}; negative={2:.2f} \n".format(
-            positive_score,
-            neutral_score,
-            negative_score)
+    sentiment_message = [str(positive_score*100)+"%", str(neutral_score*100)+"%", str(negative_score*100)+"%"]
     
-    message = [text_message] + [sentiment_message] + keyphrase_message + entity_message
-    return message
+    return sentiment_message, entity_message, keyphrase_message

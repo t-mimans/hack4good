@@ -18,22 +18,13 @@ from azure.cognitiveservices.vision.contentmoderator import ContentModeratorClie
 from azure.cognitiveservices.vision.contentmoderator.models import ( Screen )
 from msrest.authentication import CognitiveServicesCredentials
 
-# get values from .env
-load_dotenv()
-
-# Load environment variables
-SUBSCRIPTION_KEY = os.getenv('CONTENT_MODERATOR_SUBSCRIPTION_KEY')
-ENDPOINT         = os.getenv('CONTENT_MODERATOR_ENDPOINT')
-LOCATION         = os.getenv('CONTENT_MODERATOR_LOCATION')
-
-
-def text_moderation(text_to_moderate):
+def text_moderation(url, key, text_to_moderate):
     '''
     This functon will moderate the input text.
     @param text, string --> text to be moderated
     '''
 
-    client = ContentModeratorClient( endpoint=ENDPOINT, credentials=CognitiveServicesCredentials( SUBSCRIPTION_KEY ) )
+    client = ContentModeratorClient( url, CognitiveServicesCredentials( key ) )
     
     # Check for profanity in the input text
     screen = client.text_moderation.screen_text(
@@ -51,14 +42,3 @@ def text_moderation(text_to_moderate):
 
     assert isinstance(screen, Screen)
     return screen.as_dict()
-
-
-def main():
-    print("Hello World! \n\n")
-
-    text = input().strip()
-    pprint(text_moderation(text))
-
-
-if __name__ == "__main__":
-    main()  

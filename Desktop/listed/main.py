@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.textanalytics import TextAnalyticsClient
 from text_analytics import TextAnalytics
+from contentmoderation import text_moderation
 import urllib.request 
 import urllib.error
 import json 
@@ -23,18 +24,30 @@ def index():
         return render_template('index.html')
 
     elif request.method == 'POST':
-        #perform analytics on the input text
-        client = TextAnalyticsClient(COGSVCS_CLIENTURL, AzureKeyCredential(COGSVCS_KEY))
-
         #grab the input text
         text = request.form['text_input']
-        text_chunks = [text[i:i+1024] for i in range(0, len(text), 1024)]
+        text_chunks = [text[i:i+1020] for i in range(0, len(text), 1024)]
+        
+        # some additional variables
+        highlighted = text
+        hate_score = 0
+        hate_words = []
 
-        #run text analytics on the input
-        text_analytics_message = TextAnalytics(COGSVCS_CLIENTURL, COGSVCS_KEY, text_chunks)    
+        sentiment_message, entity_message, keyphrase_message = TextAnalytics(COGSVCS_CLIENTURL, COGSVCS_KEY, text_chunks)    
+        
+        for chunk in text_chunks:
+            toxic_words = text_moderation(COGSVCS_CLIENTURL, COGSVCS_KEY, chunk)
+            
+            if "terms" in toxic_words:
+                for term in toxic_words['terms']:
+                    if term['term'] not in hate_words:
+                        highlighted = highlighted.replace(term['term'], "<mark>" + term['term'] + "</mark>")
+                        hate_words.append(term['term'])
+
+            hate_score += get_hate_score(chunk)
 
         #return all of the messages in a sample output
-        return render_template('sample_output.html', message=text_analytics_message)
+        return render_template('report.html', text_highlighted=highlighted, positive=sentiment_message[0], neutral=sentiment_message[1], negative=sentiment_message[2], entities=entity_message, keyphrases=keyphrase_message, hate=str(hate_score*100), hatefulwords=hate_words)
 
 @app.route('/about')
 def about():
