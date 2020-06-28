@@ -3,8 +3,10 @@ from flask import Flask, request, render_template
 from dotenv import load_dotenv
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.textanalytics import TextAnalyticsClient
+from text_analytics import TextAnalytics
 
 app = Flask(__name__)
+
 load_dotenv()
 
 COGSVCS_KEY = os.getenv('COGSVCS_KEY')
@@ -23,32 +25,13 @@ def index():
 
         #grab the input text
         text = request.form['text_input']
-        text = [text]
+        text_chunks = [text[i:i+1024] for i in range(0, len(text), 1024)]
 
-        #grab the sentiment response
-        sentiment_response = client.analyze_sentiment(documents = text)[0]
-        message = []
-        message.append("YOUR TEXT: " + text[0])
-        message.append("Overall scores: positive={0:.2f}; neutral={1:.2f}; negative={2:.2f} \n".format(
-            sentiment_response.confidence_scores.positive,
-            sentiment_response.confidence_scores.neutral,
-            sentiment_response.confidence_scores.negative,
-        ))
+        #run text analytics on the input
+        text_analytics_message = TextAnalytics(COGSVCS_CLIENTURL, COGSVCS_KEY, text_chunks)    
 
-        #grab the keyphrases
-        message.append("Keyphrases: ")
-        keyphrase_response = client.extract_key_phrases(documents = text)[0]
-        for phrase in keyphrase_response.key_phrases:
-            message.append("* {0} \n".format(phrase))
-
-        #grab the keyphrases
-        message.append("Entities: ")
-        entities_response = client.recognize_entities(documents = text)[0]
-        for entity in entities_response.entities:
-            message.append("* {0} [{1}]\n".format(entity.text, entity.category))
-        
         #return all of the messages in a sample output
-        return render_template('sample_output.html', message=message)
+        return render_template('sample_output.html', message=text_analytics_message)
 
 @app.route('/about')
 def about():
