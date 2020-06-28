@@ -1,0 +1,4 @@
+env:
+  AZURE_WEBAPP_NAME: PositiveCheck   # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: './Desktop/listed'      # set this to the path to your web app project, defaults to the repository root
+  PYTHON_VERSION: '3.7'                # set this to the Python version to use
