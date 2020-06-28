@@ -41,9 +41,13 @@ def text_moderation(text_to_moderate):
         text_content = BytesIO(bytes(text_to_moderate, 'utf-8')),
         language = "eng",
         autocorrect = True,
-        pii = True,
         classify = True
     )
+
+    # Category1 refers to potential presence of language that may be considered sexually explicit or adult in certain situations.
+    # Category2 refers to potential presence of language that may be considered sexually suggestive or mature in certain situations.
+    # Category3 refers to potential presence of language that may be considered offensive in certain situations.
+    # Score is between 0 and 1. The higher the score, the higher the model is predicting that the category may be applicable. This feature relies on a statistical model rather than manually coded outcomes. We recommend testing with your own content to determine how each category aligns to your requirements.
 
     assert isinstance(screen, Screen)
     return screen.as_dict()
