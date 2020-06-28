@@ -16,6 +16,12 @@ load_dotenv()
 COGSVCS_KEY = os.getenv('COGSVCS_KEY')
 COGSVCS_CLIENTURL = os.getenv('COGSVCS_CLIENTURL')
 
+racism_file = open("racism_bias.txt", "r")
+racism_bias = racism_file.read().split('\n')
+
+sexism_file = open("sexism_bias.txt", "r")
+sexism_bias = sexism_file.read().split('\n')
+
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
@@ -31,6 +37,8 @@ def index():
         # some additional variables
         highlighted = text
         hate_score = 0
+        sexism_score = 0
+        racism_score = 0
         hate_words = []
 
         sentiment_message, entity_message, keyphrase_message = TextAnalytics(COGSVCS_CLIENTURL, COGSVCS_KEY, text_chunks)    
@@ -41,13 +49,33 @@ def index():
             if "terms" in toxic_words:
                 for term in toxic_words['terms']:
                     if term['term'] not in hate_words:
+                        #highlighting word using html
                         highlighted = highlighted.replace(term['term'], "<mark>" + term['term'] + "</mark>")
-                        hate_words.append(term['term'])
+                        hate_words.append(term['term'])    
+
+            #check if the text exhibits racial bias            
+            for phrase in racism_bias:
+                print(phrase)
+                if phrase in chunk:
+                    highlighted = highlighted.replace(phrase, "<mark>" + phrase + "</mark>")
+                    racism_score+=1
+
+            #check if the text exhibits sexual bias
+            for phrase in sexism_bias:
+                print(phrase)
+                if phrase in chunk:
+                    highlighted = highlighted.replace(phrase, "<mark>" + phrase + "</mark>")
+                    sexism_score+=1        
+
 
             hate_score += get_hate_score(chunk)
 
+        if sexism_score >= racism_score:
+            bias_text = 'sexual_bias.html'
+        elif racism_score > sexism_score:
+            bias_text = 'racial_bias.html'
         #return all of the messages in a sample output
-        return render_template('report.html', text_highlighted=highlighted, positive=sentiment_message[0], neutral=sentiment_message[1], negative=sentiment_message[2], entities=entity_message, keyphrases=keyphrase_message, hate=str(hate_score*100), hatefulwords=hate_words)
+        return render_template('report.html', text_highlighted=highlighted, bias=bias_text, positive=sentiment_message[0], neutral=sentiment_message[1], negative=sentiment_message[2], entities=entity_message, keyphrases=keyphrase_message, hate=str(hate_score*100), hatefulwords=hate_words)
 
 @app.route('/about')
 def about():

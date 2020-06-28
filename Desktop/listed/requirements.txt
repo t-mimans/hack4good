@@ -2,4 +2,4 @@ flask
 python-dotenv
 azure-cognitiveservices-vision-contentmoderator
 mrest
-python-dotenv
+azure-ai-textanalytics
