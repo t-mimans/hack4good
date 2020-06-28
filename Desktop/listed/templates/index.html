@@ -25,6 +25,15 @@
     
   </head>
   <body>
+
+  <style>
+    textarea {
+        border: none;
+        background-color: transparent;
+        resize: none;
+        outline: none;
+    }
+  </style>
   
   <div class="site-wrap">
 
@@ -82,10 +91,10 @@
             </div>
 
             <div class="form-search-wrap p-2" data-aos="fade-up" data-aos-delay="200">
-              <form method="POST">
+              <form method="post">
                 <div class="row align-items-center">
                   <div class="col-lg-12 col-xl-7 no-sm-border border-right">
-                    <input type="text" id="text_input" name="text_input" class="form-control" placeholder="What is your message">
+                    <textarea id="text_input" style="textarea_modified" name="text_input" rows="10" cols="65">It was a dark and stormy night...</textarea>        
                   </div>
                   <div class="col-lg-12 col-xl-3">
                     <div class="select-wrap">
